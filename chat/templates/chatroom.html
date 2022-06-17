@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+</head>
+<body>
+    <div class="container row g-3 align-items-center">
+        <label class="form-label">Message Box</label>
+        <div class="col-md-12">
+            <textarea id="chat-text" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="col-md-12">
+            <input id="chat-input-text" type="text"/>
+        </div>
+        <div class="col-md-12">
+            <button id="chat-submit" type="button" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+
+    {{ user_name.username }}
+    {{ room_name| json_script:"room-name"}}
+    <script>
+        
+        const roomName = JSON.parse(document.getElementById('room-name').textContent)
+        const chatSocket = new WebSocket(
+            `ws://${window.location.host}/ws/chat/${roomName}/`
+        )
+        chatSocket.onmessage = function (e){
+            const data = JSON.parse(e.data)
+            document.querySelector('#chat-text').value += `${data.userName}: ${data.message} ${'\n'}`
+        }
+
+        document.querySelector('#chat-submit').onclick = function (e){
+            const message = document.querySelector('#chat-input-text').value;
+            chatSocket.send(JSON.stringify({
+                message: message
+            }));
+            document.querySelector('#chat-input-text').value = '';
+        }
+    </script>
+</body>
+</html>
